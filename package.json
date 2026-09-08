@@ -1,7 +1,7 @@
 {
   "name": "dsh-web-search-anysearch",
   "description": "AnySearch Web Search Provider for DeepSeek Harness: native AnySearch /v1/search, dedicated Web settings section, DSH credentials integration, Web and Headless profile support.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "keywords": [
     "anysearch",
     "deepseek-harness",

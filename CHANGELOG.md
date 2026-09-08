@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-09-08
+
+Compatibility fix for the `@deepseek-ai/dsh-settings` API change.
+
+### Changed
+
+- Migrated settings registration from the removed `installSettingsSection` / `settingsNamespace` helpers to the current `ctx.settings.installSection` + a plain string namespace, matching the shipped `web-search-deepseek` provider. The package now loads on harness versions that removed the old helpers.
+
 ## [0.1.1] - 2026-08-17
 
 Packaging fixes for npm publication readiness.
