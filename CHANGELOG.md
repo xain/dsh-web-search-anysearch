@@ -6,11 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [0.1.2] - 2026-09-08
 
-Compatibility fix for the `@deepseek-ai/dsh-settings` API change.
+Compatibility fixes for harness API changes.
 
 ### Changed
 
 - Migrated settings registration from the removed `installSettingsSection` / `settingsNamespace` helpers to the current `ctx.settings.installSection` + a plain string namespace, matching the shipped `web-search-deepseek` provider. The package now loads on harness versions that removed the old helpers.
+- Migrated the browser half's credential writes to `ctx.remote.credentials` with positional arguments (`set(ref, value)` / `describe([ref])` / `unset(ref)`), matching the shipped web-search controller, so saving the API key and options is accepted by the current harness.
 
 ## [0.1.1] - 2026-08-17
 
