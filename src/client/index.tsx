@@ -406,6 +406,6 @@ function AnySearchForm(props: any): JSX.Element {
  * every other service below) is undefined in `apply`, and cordis fails the
  * fiber with "Cannot get property \"slots\" without inject".
  */
-const inject = ['slots', 'locale', 'connection', 'remote']
+const inject = ['slots', 'locale', 'connection', 'remote', 'remote.credentials']
 
 export { apply, inject }
