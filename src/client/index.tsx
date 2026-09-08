@@ -106,7 +106,7 @@ const IDLE: Snapshot = { apiKeyConfigured: false, writable: true, saving: false,
  * @param ctx - the browser plugin context (services: slots, locale, connection, remote).
  */
 function apply(ctx: any): void {
-  const { api } = ctx.get('connection')
+  const remote = ctx.remote
   const t = ctx.locale.bind(NS)
   let snapshot: Snapshot = { ...IDLE }
   const listeners = new Set<() => void>()
@@ -120,14 +120,14 @@ function apply(ctx: any): void {
 
   /** Ask the credentials domain about the API-key reference state. */
   const refreshCredential = async (): Promise<void> => {
-    let response: any
+    let view: any
     try {
-      response = await api.credentials.describe({ refs: [REFS.apiKey] })
+      const result = await remote.credentials.describe([REFS.apiKey])
+      if (!result.ok) return
+      view = result.value[REFS.apiKey]
     } catch {
       return
     }
-    if (!response.result.ok) return
-    const view = response.result.value.credentials[REFS.apiKey]
     setSnapshot({
       ...snapshot,
       apiKeyConfigured: view?.configured === true,
@@ -140,14 +140,14 @@ function apply(ctx: any): void {
     setSnapshot({ ...snapshot, saving: true, message: '' })
     try {
       if (apiKey.trim().length > 0) {
-        const response = await api.credentials.set({ ref: REFS.apiKey, value: apiKey.trim() })
-        if (!response.result.ok) throw new Error(response.result.error?.message ?? 'credentials.set failed')
+        const result = await remote.credentials.set(REFS.apiKey, apiKey.trim())
+        if (!result.ok) throw new Error(result.error?.message ?? 'credentials.set failed')
       }
       for (const key of FIELD_KEYS) {
         const value = fields[key].trim()
         if (value.length === 0) continue
-        const response = await api.credentials.set({ ref: REFS[key], value })
-        if (!response.result.ok) throw new Error(response.result.error?.message ?? 'credentials.set failed')
+        const result = await remote.credentials.set(REFS[key], value)
+        if (!result.ok) throw new Error(result.error?.message ?? 'credentials.set failed')
       }
       setSnapshot({ ...snapshot, saving: false, message: 'saved' })
     } catch (error) {
@@ -161,7 +161,7 @@ function apply(ctx: any): void {
     setSnapshot({ ...snapshot, saving: true, message: '' })
     for (const ref of Object.values(REFS)) {
       try {
-        await api.credentials.unset({ ref })
+        await remote.credentials.unset(ref)
       } catch {
         // Best effort; a failure leaves the value in place.
       }
