@@ -103,7 +103,7 @@ const IDLE: Snapshot = { apiKeyConfigured: false, writable: true, saving: false,
 
 /**
  * Register the AnySearch card with the Plugins configuration tab.
- * @param ctx - the browser plugin context (services: slots, locale, connection, remote).
+ * @param ctx - the browser plugin context (services: slots, locale, remote).
  */
 function apply(ctx: any): void {
   const remote = ctx.remote
@@ -159,14 +159,16 @@ function apply(ctx: any): void {
   /** Remove every stored reference so defaults take over. */
   const reset = async (): Promise<void> => {
     setSnapshot({ ...snapshot, saving: true, message: '' })
+    let failed = false
     for (const ref of Object.values(REFS)) {
       try {
-        await remote.credentials.unset(ref)
+        const result = await remote.credentials.unset(ref)
+        if (!result.ok) failed = true
       } catch {
-        // Best effort; a failure leaves the value in place.
+        failed = true
       }
     }
-    setSnapshot({ ...snapshot, saving: false, message: 'resetDone' })
+    setSnapshot({ ...snapshot, saving: false, message: failed ? 'saveFailed' : 'resetDone' })
     await refreshCredential()
   }
 
@@ -217,10 +219,12 @@ function apply(ctx: any): void {
   )
 
   ctx.effect(
-    () =>
-      ctx.remote.$on('credentials/updated', (ref: string) => {
-        if (ref === REFS.apiKey) refreshCredential()
+    () => [
+      ctx.remote.$on('credentials/reference-updated', (ref: string) => {
+        if (ref === REFS.apiKey) void refreshCredential()
       }),
+      ctx.on('connection/reset', () => void refreshCredential()),
+    ],
     'ui-plugins-anysearch: credential invalidations',
   )
 
@@ -406,6 +410,6 @@ function AnySearchForm(props: any): JSX.Element {
  * every other service below) is undefined in `apply`, and cordis fails the
  * fiber with "Cannot get property \"slots\" without inject".
  */
-const inject = ['slots', 'locale', 'connection', 'remote', 'remote.credentials']
+const inject = ['slots', 'locale', 'remote', 'remote.credentials']
 
 export { apply, inject }
